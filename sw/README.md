@@ -65,3 +65,4 @@ Summary:
 ```
 
 The script exits with code `2` if any verification errors are detected, or `0` on success.
+If any read/write error is shown, check the clock frequency of the FPGA (see [Clock Generation](gw/README.md#clock-generation)))

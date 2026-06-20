@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module adc_commander #(
+module dac_commander #(
     parameter CLK_FREQ = 10_000_000, // 10 MHz
     parameter I2C_FREQ = 100_000      // 100 kHz
 )(
@@ -16,9 +16,9 @@ module adc_commander #(
 
     // Command memory parameters
     localparam NUM_CMDS = 6;
-    localparam ADC_ADDR = 7'b1001000; // ADC I2C address (0x48)
+    localparam DAC_ADDR = 7'b1001000; // DAC I2C address (0x48)
 
-    // DAC values to be sent to the ADC (12-bit values)
+    // DAC values to be sent to the DAC (12-bit values)
     // Reference voltage is 1.2v. 
     // Set the values in a 12 bit format with the maximum value of 4095 corresponding to 1.2v
     localparam DAC1_VALUE = 12'd2048; 
@@ -98,7 +98,7 @@ module adc_commander #(
         next_state = state;
         cmd_index_next = cmd_index;
         master_start = 1'b0;
-        master_addr = ADC_ADDR;
+        master_addr = DAC_ADDR;
         master_op = 1'b0; // Write
         master_data_wr = cmd_mem[cmd_index[2:0]]; 
         o_done = 1'b0;

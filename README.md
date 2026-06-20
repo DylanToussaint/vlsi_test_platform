@@ -19,7 +19,7 @@ vlsi_test_platform/
 │   │   ├── DE10Top.sv    # Top-level module
 │   │   ├── jtag_uart_bridge.sv
 │   │   ├── jtag_engine.sv
-│   │   ├── adc_commander.sv
+│   │   ├── dac_commander.sv
 │   │   ├── i2c_master.sv
 │   │   └── uart_*.sv     # UART controller modules
 │   ├── test/             # DUT (Device Under Test) bitstreams

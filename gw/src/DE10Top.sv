@@ -42,9 +42,9 @@ module DE10Top (
         end
     end
 
-	 adc_commander #(
+	 dac_commander #(
         .CLK_FREQ(CLK_FREQ)
-     ) adc_commander_inst (
+     ) dac_commander_inst (
         .i_clk(clk),
         .i_rst_n(rst_n),
         .o_done(),  // Not used. It can be connected to an LED or left unconnected.

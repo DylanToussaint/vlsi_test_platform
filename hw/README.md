@@ -35,7 +35,7 @@ Once testing is complete, solder the PLCC socket with the orientation arrow poin
 
 ### Testing the DAC
 
-The I2C DAC IC can be tested by connecting a DE10-Lite FPGA board and loading the bitstream described elsewhere in this repository. The FPGA automatically configures the DAC over I2C after reset. The DAC requires the 1.2 V supply as its reference — ensure the core-supply jumper is set to "BRD" to use the onboard LDO. Measure the DAC outputs at testpoints DAC1 and DAC2; the expected voltages are defined in [gw/src/adc_commander.sv](../gw/src/adc_commander.sv).
+The I2C DAC IC can be tested by connecting a DE10-Lite FPGA board and loading the bitstream described elsewhere in this repository. The FPGA automatically configures the DAC over I2C after reset. The DAC requires the 1.2 V supply as its reference — ensure the core-supply jumper is set to "BRD" to use the onboard LDO. Measure the DAC outputs at testpoints DAC1 and DAC2; the expected voltages are defined in [gw/src/dac_commander.sv](../gw/src/dac_commander.sv).
 
 ### Testing the USB-UART Bridge
 
