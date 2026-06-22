@@ -8,8 +8,10 @@ module DE10Top (
     input  logic uart_rx,
     output logic uart_tx,
 
-    input  logic pll_check_i,
-    output logic pll_check_led,
+    input  logic       pll_check_i,
+    output logic [9:0] ledr,
+    output logic [6:0] hex0,
+    output logic [6:0] hex1,
 
     //output logic tck,
     //output logic tms,
@@ -36,8 +38,13 @@ module DE10Top (
     logic unused_tms;
     logic unused_tdi;
 
-
     logic clk;
+    logic spi_busy;
+    logic [7:0] spi_last_rx;
+    logic uart_rx_event;
+    logic uart_tx_event;
+    logic dac_done;
+    logic dac_ack_error;
 
 	pll_clk clkgen_i(
 		.inclk0(pll_clk),
@@ -52,8 +59,6 @@ module DE10Top (
         else
             pll_check_sync <= {pll_check_sync[0], pll_check_i};
     end
-
-    assign pll_check_led = pll_check_sync[1];
 
     // CDC logic for UART RX signal
     logic [1:0] uart_rx_sync;
@@ -70,8 +75,8 @@ module DE10Top (
      ) dac_commander_inst (
         .i_clk(clk),
         .i_rst_n(rst_n),
-        .o_done(),  // Not used. It can be connected to an LED or left unconnected.
-        .o_ack_error(),  // Not used. It can be connected to an LED or left unconnected.
+        .o_done(dac_done),
+        .o_ack_error(dac_ack_error),
         .scl(scl),
         .sda(sda)
     );
@@ -92,8 +97,74 @@ module DE10Top (
         .spi_sclk  (spi_sclk),
         .spi_ssel  (spi_ssel),
         .spi_mosi  (spi_mosi),
-        .spi_miso  (spi_miso)
+        .spi_miso  (spi_miso),
+        .spi_busy_o(spi_busy),
+        .spi_last_rx_o(spi_last_rx),
+        .uart_rx_event_o(uart_rx_event),
+        .uart_tx_event_o(uart_tx_event)
     );
+
+    // Display the most recently received SPI byte as two hexadecimal digits.
+    hex_decoder hex0_i (
+        .value    (spi_last_rx[3:0]),
+        .segments (hex0)
+    );
+
+    hex_decoder hex1_i (
+        .value    (spi_last_rx[7:4]),
+        .segments (hex1)
+    );
+
+    // Stretch UART byte events so they are visible on LEDs.
+    localparam integer ACTIVITY_CLKS = CLK_FREQ / 10; // 100 ms
+    localparam integer ACTIVITY_W = $clog2(ACTIVITY_CLKS + 1);
+    logic [ACTIVITY_W-1:0] uart_rx_activity_count;
+    logic [ACTIVITY_W-1:0] uart_tx_activity_count;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            uart_rx_activity_count <= '0;
+            uart_tx_activity_count <= '0;
+        end else begin
+            if (uart_rx_event)
+                uart_rx_activity_count <= ACTIVITY_CLKS;
+            else if (uart_rx_activity_count != 0)
+                uart_rx_activity_count <= uart_rx_activity_count - 1'b1;
+
+            if (uart_tx_event)
+                uart_tx_activity_count <= ACTIVITY_CLKS;
+            else if (uart_tx_activity_count != 0)
+                uart_tx_activity_count <= uart_tx_activity_count - 1'b1;
+        end
+    end
+
+    // One-second-period FPGA heartbeat derived from the internal 10 MHz clock.
+    localparam integer HEARTBEAT_HALF_CLKS = CLK_FREQ / 2;
+    logic [$clog2(HEARTBEAT_HALF_CLKS)-1:0] heartbeat_count;
+    logic heartbeat;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            heartbeat_count <= '0;
+            heartbeat       <= 1'b0;
+        end else if (heartbeat_count == HEARTBEAT_HALF_CLKS - 1) begin
+            heartbeat_count <= '0;
+            heartbeat       <= ~heartbeat;
+        end else begin
+            heartbeat_count <= heartbeat_count + 1'b1;
+        end
+    end
+
+    assign ledr[0] = pll_check_sync[1];
+    assign ledr[1] = rst_n;
+    assign ledr[2] = spi_busy;
+    assign ledr[3] = ~spi_ssel;
+    assign ledr[4] = spi_miso;
+    assign ledr[5] = (uart_rx_activity_count != 0);
+    assign ledr[6] = (uart_tx_activity_count != 0);
+    assign ledr[7] = dac_done;
+    assign ledr[8] = dac_ack_error;
+    assign ledr[9] = heartbeat;
 
     /////////////////////////////////// LED signals (for debugging)
     ////     Quartus PLL IP generator might not work properly. 
