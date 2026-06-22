@@ -22,7 +22,13 @@ module jtag_uart_bridge #(
     output logic spi_sclk,
     output logic spi_ssel,
     output logic spi_mosi,
-    input  logic spi_miso
+    input  logic spi_miso,
+
+    // Debug/status outputs
+    output logic       spi_busy_o,
+    output logic [7:0] spi_last_rx_o,
+    output logic       uart_rx_event_o,
+    output logic       uart_tx_event_o
 );
 
     localparam TX_FIFO_DEPTH = 256;
@@ -83,6 +89,17 @@ module jtag_uart_bridge #(
     logic       spi_rst_n;
 
     assign spi_rst_n  = rst_n &&  mode_spi;
+    assign spi_busy_o = spi_busy;
+    assign uart_rx_event_o = rx_valid;
+    assign uart_tx_event_o = tx_valid && tx_ready;
+
+    // Hold the most recently completed SPI receive byte for display/debug.
+    always_ff @(posedge clk) begin
+        if (!rst_n)
+            spi_last_rx_o <= 8'h00;
+        else if (spi_tx_wr_en)
+            spi_last_rx_o <= spi_tx_wr_data;
+    end
 
     // =========================================================
     // Mode Select
