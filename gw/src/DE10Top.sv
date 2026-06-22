@@ -23,8 +23,8 @@ module DE10Top (
     output logic spi_mosi,
     input  logic spi_miso,
 
-    output logic clk_out,
 
+    input  logic clk_out,
 	// I2C bus
     inout  wire  scl,
     inout  wire  sda
@@ -105,15 +105,15 @@ module DE10Top (
     );
 
     // Display the most recently received SPI byte as two hexadecimal digits.
-    hex_decoder hex0_i (
-        .value    (spi_last_rx[3:0]),
-        .segments (hex0)
-    );
+    //hex_decoder hex0_i (
+    //    .value    (spi_last_rx[3:0]),
+    //    .segments (hex0)
+    //);
 
-    hex_decoder hex1_i (
-        .value    (spi_last_rx[7:4]),
-        .segments (hex1)
-    );
+    //hex_decoder hex1_i (
+    //    .value    (spi_last_rx[7:4]),
+    //    .segments (hex1)
+    //);
 
     // Stretch UART byte events so they are visible on LEDs.
     localparam integer ACTIVITY_CLKS = CLK_FREQ / 10; // 100 ms
@@ -170,7 +170,7 @@ module DE10Top (
     ////     Quartus PLL IP generator might not work properly. 
     ////     Check the clock output frequency matches the expected value (10 MHz).
 
-    localparam COUNTER_TOP = CLK_FREQ / (2 * OUTPUT_CLK_FREQ); // Number of input clock cycles for half period of output clock
+   /* localparam COUNTER_TOP = CLK_FREQ / (2 * OUTPUT_CLK_FREQ); // Number of input clock cycles for half period of output clock
     logic [$clog2(COUNTER_TOP)-1:0] clk_counter;
 
     always_ff @(posedge clk) begin
@@ -184,6 +184,51 @@ module DE10Top (
                 clk_out <= ~clk_out; 
             end
         end
+    end*/
+
+    logic [31:0] asic_clk_counter;
+
+    always_ff @(posedge clk_out or negedge rst_n) begin
+        if (!rst_n)
+            asic_clk_counter <= 32'd0;
+        else
+            asic_clk_counter <= asic_clk_counter + 32'd1;
     end
+
+    // Synchronize one slow counter bit into the FPGA 10 MHz domain.
+    logic [1:0] asic_clk_alive_sync;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            asic_clk_alive_sync <= 2'b00;
+        else
+            asic_clk_alive_sync <= {
+                asic_clk_alive_sync[0],
+                asic_clk_counter[25]
+            };
+    end
+
+    logic [7:0] asic_count_meta;
+    logic [7:0] asic_count_sync;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            asic_count_meta <= 8'h00;
+            asic_count_sync <= 8'h00;
+        end else begin
+            asic_count_meta <= asic_clk_counter[31:24];
+            asic_count_sync <= asic_count_meta;
+        end
+    end
+
+    hex_decoder hex0_clock_i (
+        .value    (asic_count_sync[3:0]),
+        .segments (hex0)
+    );
+
+    hex_decoder hex1_clock_i (
+        .value    (asic_count_sync[7:4]),
+        .segments (hex1)
+    );
 
 endmodule
