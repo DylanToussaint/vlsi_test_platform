@@ -24,7 +24,7 @@ module DE10Top (
     input  logic spi_miso,
 
 
-    input  logic clk_out,
+    output  logic clk_out,
 	// I2C bus
     inout  wire  scl,
     inout  wire  sda
@@ -32,7 +32,7 @@ module DE10Top (
 );
 
     localparam CLK_FREQ = 10_000_000; // 10 MHz
-    localparam OUTPUT_CLK_FREQ = 1_000_000; // 100 kHz
+    localparam OUTPUT_CLK_FREQ = 100_000; // 100 kHz
 
     logic unused_tck;
     logic unused_tms;
@@ -105,15 +105,15 @@ module DE10Top (
     );
 
     // Display the most recently received SPI byte as two hexadecimal digits.
-    //hex_decoder hex0_i (
-    //    .value    (spi_last_rx[3:0]),
-    //    .segments (hex0)
-    //);
+    hex_decoder hex0_i (
+        .value    (spi_last_rx[3:0]),
+        .segments (hex0)
+    );
 
-    //hex_decoder hex1_i (
-    //    .value    (spi_last_rx[7:4]),
-    //    .segments (hex1)
-    //);
+    hex_decoder hex1_i (
+        .value    (spi_last_rx[7:4]),
+        .segments (hex1)
+    );
 
     // Stretch UART byte events so they are visible on LEDs.
     localparam integer ACTIVITY_CLKS = CLK_FREQ / 10; // 100 ms
@@ -164,13 +164,13 @@ module DE10Top (
     assign ledr[6] = (uart_tx_activity_count != 0);
     assign ledr[7] = dac_done;
     assign ledr[8] = dac_ack_error;
-    //assign ledr[9] = heartbeat;
+    assign ledr[9] = heartbeat;
 
     /////////////////////////////////// LED signals (for debugging)
     ////     Quartus PLL IP generator might not work properly. 
     ////     Check the clock output frequency matches the expected value (10 MHz).
 
-   /* localparam COUNTER_TOP = CLK_FREQ / (2 * OUTPUT_CLK_FREQ); // Number of input clock cycles for half period of output clock
+    localparam COUNTER_TOP = CLK_FREQ / (2 * OUTPUT_CLK_FREQ); // Number of input clock cycles for half period of output clock
     logic [$clog2(COUNTER_TOP)-1:0] clk_counter;
 
     always_ff @(posedge clk) begin
@@ -184,8 +184,6 @@ module DE10Top (
                 clk_out <= ~clk_out; 
             end
         end
-    end*/
-
-    assign ledr[9] = clk_out;
+    end
 
 endmodule
