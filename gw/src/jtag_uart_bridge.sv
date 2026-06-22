@@ -6,6 +6,7 @@ module jtag_uart_bridge #(
 )(
     input  logic clk,        // 10 MHz
     input  logic rst_n,
+    input  logic mode_spi,
 
     // UART pins
     input  logic uart_rx,
@@ -15,7 +16,13 @@ module jtag_uart_bridge #(
     output logic TCK,
     output logic TMS,
     output logic TDI,
-    input  logic TDO
+    input  logic TDO,
+
+    //SPI pins
+    output logic spi_sclk,
+    output logic spi_ssel,
+    output logic spi_mosi,
+    input  logic spi_miso
 );
 
     localparam TX_FIFO_DEPTH = 256;
@@ -55,6 +62,44 @@ module jtag_uart_bridge #(
     logic [7:0] tx_data;
 
     // =========================================================
+    // JTAG Signals
+    // =========================================================
+
+    logic       jtag_rx_rd_en;
+    logic       jtag_tx_wr_en;
+    logic [7:0] jtag_tx_wr_data;
+    logic       jtag_rst_n;
+
+    assign jtag_rst_n = rst_n && !mode_spi;
+
+    // =========================================================
+    // SPI Signals
+    // =========================================================
+
+    logic       spi_rx_rd_en;
+    logic       spi_tx_wr_en;
+    logic [7:0] spi_tx_wr_data;
+    logic       spi_busy;
+    logic       spi_rst_n;
+
+    assign spi_rst_n  = rst_n &&  mode_spi;
+
+    // =========================================================
+    // Mode Select
+    // =========================================================
+    always_comb begin
+        if (mode_spi) begin
+            rx_fifo_rd_en = spi_rx_rd_en;
+            tx_fifo_wr_en = spi_tx_wr_en;
+            tx_fifo_wr_data = spi_tx_wr_data;
+        end else begin
+            rx_fifo_rd_en = jtag_rx_rd_en;
+            tx_fifo_wr_en = jtag_tx_wr_en;
+            tx_fifo_wr_data = jtag_tx_wr_data;
+        end
+    end
+
+    // =========================================================
     // UART RX
     // =========================================================
     uart_rx #(
@@ -91,21 +136,49 @@ module jtag_uart_bridge #(
     // =========================================================
     jtag_engine jtag_engine_i (
         .clk            (clk),
-        .rst_n            (rst_n),
+        .rst_n            (jtag_rst_n),
         // RX FIFO interface (UART → JTAG)
         .rx_empty       (rx_fifo_empty),
-        .rx_rd_en       (rx_fifo_rd_en),
+        .rx_rd_en       (jtag_rx_rd_en),
         .rx_rd_data     (rx_fifo_rd_data),
         // TX FIFO interface (JTAG → UART)
         .tx_full        (tx_fifo_full),
-        .tx_wr_en       (tx_fifo_wr_en),
-        .tx_wr_data     (tx_fifo_wr_data),
+        .tx_wr_en       (jtag_tx_wr_en),
+        .tx_wr_data     (jtag_tx_wr_data),
         // JTAG pins
         .TCK            (TCK),
         .TMS            (TMS),
         .TDI            (TDI),
         .TDO            (TDO)
     );
+
+    // =========================================================
+    // SPI Engine
+    // =========================================================
+
+    spi_master #(
+    .CLK_FREQ_HZ (CLK_FREQ),
+    .SPI_FREQ_HZ (5_000_000)
+    ) spi_master_i (
+        .clk        (clk),
+        .rst_n      (spi_rst_n),
+
+        .rx_empty   (rx_fifo_empty),
+        .rx_rd_en   (spi_rx_rd_en),
+        .rx_rd_data (rx_fifo_rd_data),
+
+        .tx_full    (tx_fifo_full),
+        .tx_wr_en   (spi_tx_wr_en),
+        .tx_wr_data (spi_tx_wr_data),
+
+        .spi_sclk   (spi_sclk),
+        .spi_ssel   (spi_ssel),
+        .spi_mosi   (spi_mosi),
+        .spi_miso   (spi_miso),
+
+        .busy       (spi_busy)
+    );
+
 
     // =========================================================
     // TX FIFO
