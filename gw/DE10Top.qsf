@@ -84,6 +84,12 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to pll_check_i
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to mem_self_test
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to mem_test_sel
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to mem_sel
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to mem_done
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to goNo
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to abort
 
 set_location_assignment PIN_P11 -to pll_clk
 set_location_assignment PIN_V7 -to rst_n
@@ -97,6 +103,14 @@ set_location_assignment PIN_V10 -to spi_ssel
 set_location_assignment PIN_V5 -to spi_mosi
 set_location_assignment PIN_W10 -to spi_miso
 set_location_assignment PIN_W12 -to pll_check_i
+set_location_assignment PIN_W5   -to mem_self_test
+set_location_assignment PIN_V8   -to mem_test_sel[0]
+set_location_assignment PIN_W13  -to mem_test_sel[1]
+set_location_assignment PIN_W8   -to mem_test_sel[2]
+set_location_assignment PIN_AB13 -to mem_sel
+set_location_assignment PIN_AA14 -to mem_done
+set_location_assignment PIN_AB12 -to goNo
+set_location_assignment PIN_Y11  -to abort
 
 # DE10-Lite red LEDs
 set_location_assignment PIN_A8  -to ledr[0]

@@ -27,8 +27,16 @@ module DE10Top (
     input  logic clk_out,
 	// I2C bus
     inout  wire  scl,
-    inout  wire  sda
+    inout  wire  sda,
 
+    //Memory Self Test Signals
+    output logic       mem_self_test,
+    output logic [2:0] mem_test_sel,
+    output logic       mem_sel,
+    output logic       abort,
+
+    input  logic       mem_done,
+    input  logic       goNo
 );
 
     localparam CLK_FREQ = 10_000_000; // 10 MHz
@@ -165,6 +173,13 @@ module DE10Top (
     assign ledr[7] = dac_done;
     assign ledr[8] = dac_ack_error;
     assign ledr[9] = heartbeat;
+
+
+    //Memory Self Test Logic
+    assign mem_self_test = 1'b0;
+    assign mem_test_sel  = 3'b000;
+    assign mem_self      = 1'b0;
+    assign abort         = 1'b0;
 
     /////////////////////////////////// LED signals (for debugging)
     ////     Quartus PLL IP generator might not work properly. 
