@@ -81,6 +81,8 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda
 #set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scan_en
 #set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scan_di
 #set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scan_do
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to pll_check_i
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to pll_check_led
 
 set_location_assignment PIN_P11 -to pll_clk
 set_location_assignment PIN_V7 -to rst_n
@@ -94,6 +96,8 @@ set_location_assignment PIN_V10 -to spi_ssel
 set_location_assignment PIN_V5 -to spi_mosi
 set_location_assignment PIN_W10 -to spi_miso
 set_location_assignment PIN_C10 -to mode_spi
+set_location_assignment PIN_W12 -to pll_check_i
+set_location_assignment PIN_A8 -to pll_check_led
 #set_location_assignment PIN_Y5  -to scan_clk
 #set_location_assignment PIN_AA6 -to scan_testmode
 #set_location_assignment PIN_Y3  -to scan_en

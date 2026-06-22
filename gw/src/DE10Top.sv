@@ -8,6 +8,9 @@ module DE10Top (
     input  logic uart_rx,
     output logic uart_tx,
 
+    input  logic pll_check_i,
+    output logic pll_check_led,
+
     //output logic tck,
     //output logic tms,
     //output logic tdi,
@@ -40,6 +43,17 @@ module DE10Top (
 		.inclk0(pll_clk),
 		.c0(clk)
 	);
+
+    // CDC logic for pll_check_o
+    logic [1:0] pll_check_sync;
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            pll_check_sync <= 2'b00;
+        else
+            pll_check_sync <= {pll_check_sync[0], pll_check_i};
+    end
+
+    assign pll_check_led = pll_check_sync[1];
 
     // CDC logic for UART RX signal
     logic [1:0] uart_rx_sync;
