@@ -32,7 +32,7 @@ module DE10Top (
 );
 
     localparam CLK_FREQ = 10_000_000; // 10 MHz
-    localparam OUTPUT_CLK_FREQ = 100_000; // 100 kHz
+    localparam OUTPUT_CLK_FREQ = 5_000_000; // 100 kHz
 
     logic unused_tck;
     logic unused_tms;

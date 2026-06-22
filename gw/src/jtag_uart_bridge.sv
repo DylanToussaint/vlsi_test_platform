@@ -175,7 +175,7 @@ module jtag_uart_bridge #(
 
     spi_master #(
     .CLK_FREQ_HZ (CLK_FREQ),
-    .SPI_FREQ_HZ (5_000_000)
+    .SPI_FREQ_HZ (500_000)
     ) spi_master_i (
         .clk        (clk),
         .rst_n      (spi_rst_n),
