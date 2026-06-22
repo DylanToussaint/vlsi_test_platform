@@ -24,7 +24,7 @@ module DE10Top (
     input  logic spi_miso,
 
 
-    output  logic clk_out,
+    input  logic clk_out,
 	// I2C bus
     inout  wire  scl,
     inout  wire  sda
@@ -170,7 +170,7 @@ module DE10Top (
     ////     Quartus PLL IP generator might not work properly. 
     ////     Check the clock output frequency matches the expected value (10 MHz).
 
-    localparam COUNTER_TOP = CLK_FREQ / (2 * OUTPUT_CLK_FREQ); // Number of input clock cycles for half period of output clock
+    /*localparam COUNTER_TOP = CLK_FREQ / (2 * OUTPUT_CLK_FREQ); // Number of input clock cycles for half period of output clock
     logic [$clog2(COUNTER_TOP)-1:0] clk_counter;
 
     always_ff @(posedge clk) begin
@@ -184,6 +184,6 @@ module DE10Top (
                 clk_out <= ~clk_out; 
             end
         end
-    end
+    end*/
 
 endmodule
