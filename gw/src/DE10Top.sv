@@ -164,7 +164,7 @@ module DE10Top (
     assign ledr[6] = (uart_tx_activity_count != 0);
     assign ledr[7] = dac_done;
     assign ledr[8] = dac_ack_error;
-    assign ledr[9] = heartbeat;
+    //assign ledr[9] = heartbeat;
 
     /////////////////////////////////// LED signals (for debugging)
     ////     Quartus PLL IP generator might not work properly. 
@@ -186,49 +186,6 @@ module DE10Top (
         end
     end*/
 
-    logic [31:0] asic_clk_counter;
-
-    always_ff @(posedge clk_out or negedge rst_n) begin
-        if (!rst_n)
-            asic_clk_counter <= 32'd0;
-        else
-            asic_clk_counter <= asic_clk_counter + 32'd1;
-    end
-
-    // Synchronize one slow counter bit into the FPGA 10 MHz domain.
-    logic [1:0] asic_clk_alive_sync;
-
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
-            asic_clk_alive_sync <= 2'b00;
-        else
-            asic_clk_alive_sync <= {
-                asic_clk_alive_sync[0],
-                asic_clk_counter[25]
-            };
-    end
-
-    logic [7:0] asic_count_meta;
-    logic [7:0] asic_count_sync;
-
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            asic_count_meta <= 8'h00;
-            asic_count_sync <= 8'h00;
-        end else begin
-            asic_count_meta <= asic_clk_counter[31:24];
-            asic_count_sync <= asic_count_meta;
-        end
-    end
-
-    hex_decoder hex0_clock_i (
-        .value    (asic_count_sync[3:0]),
-        .segments (hex0)
-    );
-
-    hex_decoder hex1_clock_i (
-        .value    (asic_count_sync[7:4]),
-        .segments (hex1)
-    );
+    assign ledr[9] = clk_out;
 
 endmodule
