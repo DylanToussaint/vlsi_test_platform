@@ -4,15 +4,14 @@
 module DE10Top (
     input logic pll_clk,
     input logic rst_n,
-    input logic mode_spi,
 
     input  logic uart_rx,
     output logic uart_tx,
 
-    output logic tck,
-    output logic tms,
-    output logic tdi,
-    input  logic tdo,
+    //output logic tck,
+    //output logic tms,
+    //output logic tdi,
+    //input  logic tdo,
 
     output logic spi_sclk,
     output logic spi_ssel,
@@ -29,6 +28,10 @@ module DE10Top (
 
     localparam CLK_FREQ = 10_000_000; // 10 MHz
     localparam OUTPUT_CLK_FREQ = 100_000; // 100 kHz
+
+    logic unused_tck;
+    logic unused_tms;
+    logic unused_tdi;
 
 
     logic clk;
@@ -65,13 +68,13 @@ module DE10Top (
     ) jtag_uart_inst (
         .clk      (clk),
         .rst_n    (rst_n),
-        .mode_spi  (mode_spi),
+        .mode_spi  (1'b1),
         .uart_rx  (uart_rx_sync[1]),
         .uart_tx  (uart_tx),
-        .TCK      (tck),
-        .TMS      (tms),
-        .TDI      (tdi),
-        .TDO      (tdo),
+        .TCK      (unused_tck),
+        .TMS      (unused_tms),
+        .TDI      (unused_tdi),
+        .TDO      (1'b0),
         .spi_sclk  (spi_sclk),
         .spi_ssel  (spi_ssel),
         .spi_mosi  (spi_mosi),
